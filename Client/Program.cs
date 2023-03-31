@@ -20,10 +20,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseWebSockets();
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Map("/connect", async context =>
@@ -32,9 +31,11 @@ app.Map("/connect", async context =>
     {
         await ws.ConnectAsync(new Uri("wss://localhost:7062/ws"), CancellationToken.None);
         var buffer = new byte[256];
+
         while (ws.State == WebSocketState.Open)
         {
             var result = await ws.ReceiveAsync(buffer, CancellationToken.None);
+
             if (result.MessageType == WebSocketMessageType.Close)
             {
                 await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
@@ -46,5 +47,6 @@ app.Map("/connect", async context =>
         }
     }
 });
+
 
 app.Run();
